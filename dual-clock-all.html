@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Custom Dual Clock</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #000;
+      color: #00FFCC;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Arial', sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .clock-container {
+      display: flex;
+      gap: 100px;
+      flex-wrap: wrap;
+    }
+
+    .time-box {
+      text-align: center;
+    }
+
+    .city {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .time {
+      font-weight: bold;
+    }
+
+    .controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 8px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .controls label {
+      font-size: 12px;
+      color: #fff;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    button {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls" id="controls">
+    <label>背景:
+      <input type="color" id="bgColor" value="#000000">
+    </label>
+    <label>文字:
+      <input type="color" id="textColor" value="#00FFCC">
+    </label>
+    <label>大小(px):
+      <input type="number" id="fontSize" value="64" min="10" max="200">
+    </label>
+    <button id="toggleFullscreen">切換全螢幕</button>
+    <button id="toggleUI">顯示/隱藏設定</button>
+  </div>
+
+  <div class="clock-container">
+    <div class="time-box">
+      <div class="city">Taipei</div>
+      <div id="taipei" class="time">--:--:--</div>
+    </div>
+    <div class="time-box">
+      <div class="city">Chicago</div>
+      <div id="chicago" class="time">--:--:--</div>
+    </div>
+  </div>
+
+  <script>
+    function updateTime() {
+      const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+      document.getElementById('taipei').textContent = new Date().toLocaleTimeString('en-US', { ...options, timeZone: 'Asia/Taipei' });
+      document.getElementById('chicago').textContent = new Date().toLocaleTimeString('en-US', { ...options, timeZone: 'America/Chicago' });
+    }
+
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    const bgColorInput = document.getElementById('bgColor');
+    const textColorInput = document.getElementById('textColor');
+    const fontSizeInput = document.getElementById('fontSize');
+    const taipeiTime = document.getElementById('taipei');
+    const chicagoTime = document.getElementById('chicago');
+
+    function updateStyleAndSave() {
+      const bg = bgColorInput.value;
+      const text = textColorInput.value;
+      const size = fontSizeInput.value;
+
+      document.body.style.backgroundColor = bg;
+      document.body.style.color = text;
+      taipeiTime.style.fontSize = chicagoTime.style.fontSize = size + 'px';
+
+      // 儲存設定
+      localStorage.setItem('clockSettings', JSON.stringify({ bg, text, size }));
+    }
+
+    // 讀取儲存設定
+    function loadSavedSettings() {
+      const saved = localStorage.getItem('clockSettings');
+      if (saved) {
+        const { bg, text, size } = JSON.parse(saved);
+        bgColorInput.value = bg;
+        textColorInput.value = text;
+        fontSizeInput.value = size;
+        updateStyleAndSave();
+      }
+    }
+
+    // 綁定事件
+    bgColorInput.addEventListener('input', updateStyleAndSave);
+    textColorInput.addEventListener('input', updateStyleAndSave);
+    fontSizeInput.addEventListener('input', updateStyleAndSave);
+
+    loadSavedSettings();
+
+    // 全螢幕
+    document.getElementById('toggleFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // UI 隱藏/顯示
+    document.getElementById('toggleUI').addEventListener('click', () => {
+      document.getElementById('controls').classList.toggle('hidden');
+    });
+  </script>
+</body>
+</html>
